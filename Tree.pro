@@ -4,7 +4,17 @@
 
 TEMPLATE = app
 TARGET = Tree
-INCLUDEPATH += .
+INCLUDEPATH += . \
+               ./Trees
 
+QT += widgets
+			   
 # Input
-SOURCES += main.cpp
+
+HEADERS += *.h \
+           ./Trees/*.h \
+           ./Views/*.h
+
+SOURCES += *.cpp \
+           ./Trees/*.cpp \
+           ./Views/*.cpp

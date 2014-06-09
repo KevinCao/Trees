@@ -1,6 +1,20 @@
 #include "AVLTree.h"
+#include <iostream>
+#include <assert.h>
 
 using namespace std;
+
+
+template <typename T>
+int indexAt(T node, const std::vector<T>& vec)
+{
+	int size = vec.size();
+	for (int i=0; i < size; i++) {
+		if (vec[i] == node)
+			return i;
+	}
+	return -1;
+}
 
 AVLTree::AVLTree(void)
 	:m_pRootNode(0)
@@ -74,14 +88,134 @@ void AVLTree::updateBFForInsert(vector<Node*>& path)
 
 void AVLTree::adjustTreeForInsert(std::vector<Node*>& path)
 {
-	for (int i=path.size()-1; i>0; i--) {
+	int pathLength = path.size();
+	if (pathLength < 2)
+		return;
+
+	for (int i=path.size()-1; i>=0; i--) {
 		if (abs(path[i]->st_BF) != 2)
 			continue;
 
-		if (2 == path[i]->st_BF) {
+		Node::Orientation firstOrientation = path[i]->childOrientation(path[i+1]);
 
-		}else {
+		Node::Orientation secondOrientation = path[i+1]->childOrientation(path[i+2]);
 
+		if (Node::em_left == firstOrientation) {
+			if (Node::em_left == secondOrientation)
+				LLRotate(path[i], path);
+			else if (Node::em_righ == secondOrientation)
+				LRRotate(path[i], path);
+		}else if (Node::em_righ == firstOrientation) {
+			if (Node::em_left == secondOrientation)
+				RLRotate(path[i], path);
+			else if (Node::em_righ == secondOrientation)
+				RRRotate(path[i], path);
 		}
 	}
 }
+
+void AVLTree::LLRotate(Node* pNode, const std::vector<Node*>& path)
+{
+	assert(NULL != pNode);
+	int index = indexAt<Node*>(pNode, path);
+	if (-1 == index)
+		return;
+
+	pNode->st_pLeftChild = path[index+1]->st_pRightChild;
+	path[index+1]->st_pRightChild = pNode;
+	
+	path[index+1]->st_BF = pNode->st_BF - 2;
+
+
+
+	updateChildRoot(path, index, index+1);
+
+}
+
+void AVLTree::RRRotate(Node* pNode, const std::vector<Node*>& path)
+{
+	assert(NULL != pNode);
+	int index = indexAt<Node*>(pNode, path);
+	if (-1 == index)
+		return;
+
+	pNode->st_pRightChild = path[index+1]->st_pLeftChild;
+	path[index+1]->st_pLeftChild = path[index];
+
+
+	updateChildRoot(path, index, index+1);
+
+}
+
+void AVLTree::LRRotate(Node* pNode, const std::vector<Node*>& path)
+{
+	assert(NULL != pNode);
+	int index = indexAt(pNode, path);
+	if (-1 == index)
+		return;
+
+
+	path[index+1]->st_pRightChild = path[index+2]->st_pLeftChild;
+	path[index]->st_pLeftChild = path[index+2]->st_pRightChild;
+	path[index+2]->st_pLeftChild = path[index+1];
+	path[index+2]->st_pRightChild = path[index];
+
+
+	updateChildRoot(path, index, index+2);
+}
+
+void AVLTree::RLRotate(Node* pNode, const std::vector<Node*>& path)
+{
+	assert(NULL != pNode);
+	int index = indexAt(pNode, path);
+	if (-1 == index)
+		return;
+
+	path[index+1]->st_pLeftChild = path[index+2]->st_pLeftChild;
+	path[index]->st_pRightChild = path[index+2]->st_pRightChild;
+	path[index+2]->st_pRightChild = path[index+1];
+	path[index+2]->st_pLeftChild = path[index];
+
+
+	updateChildRoot(path, index, index+2);
+}
+
+
+void AVLTree::updateChildRoot(const std::vector<Node*>& path, int currentRootIndex, int newRootIndex)
+{
+	assert(currentRootIndex >= 0 && currentRootIndex < path.size());
+	assert(newRootIndex >= 0 && newRootIndex < path.size());
+
+	if (currentRootIndex!= 0) {
+		if (path[currentRootIndex-1]->st_pLeftChild == path[currentRootIndex])
+			path[currentRootIndex-1]->st_pLeftChild = path[newRootIndex];
+		else if (path[currentRootIndex-1]->st_pRightChild == path[currentRootIndex])
+			path[currentRootIndex-1]->st_pRightChild = path[newRootIndex];
+		else
+			std::cerr << "there is something wrong at "<< __LINE__ << " of " << __FILE__;
+
+
+		path[currentRootIndex-1]->st_BF
+			= Node::maxDeep(path[currentRootIndex-1]->st_pLeftChild)
+			- Node::maxDeep(path[currentRootIndex-1]->st_pRightChild);
+
+		path[currentRootIndex]->st_BF
+			= Node::maxDeep(path[currentRootIndex]->st_pLeftChild)
+			- Node::maxDeep(path[currentRootIndex]->st_pRightChild);
+
+		path[newRootIndex]->st_BF
+			= Node::maxDeep(path[newRootIndex]->st_pLeftChild)
+			- Node::maxDeep(path[newRootIndex]->st_pRightChild);
+
+	}else { 
+		m_pRootNode = path[newRootIndex];
+	}
+
+
+}
+
+
+
+
+
+
