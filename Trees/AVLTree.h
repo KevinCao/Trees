@@ -60,6 +60,27 @@ public:
 			return deep;
 		}
 
+		//return max deep
+		static int updateBF(Node* pNode)
+		{
+			if (NULL == pNode)
+				return -1;
+			if (NULL == pNode->st_pLeftChild 
+				&& NULL == pNode->st_pRightChild) {
+					pNode->st_BF = 0;
+					return 0;
+			}
+
+			int leftDeep = updateBF(pNode->st_pLeftChild);
+			int rightDeep = updateBF(pNode->st_pRightChild);
+
+			pNode->st_BF = leftDeep - rightDeep;
+
+			int maxDeep = leftDeep > rightDeep ? leftDeep : rightDeep;
+
+			return maxDeep+1;
+		}
+
 		int st_Value;
 		int st_BF;
 		Node* st_pLeftChild;
@@ -100,7 +121,7 @@ private:
 	void RLRotate(Node* pNode, const std::vector<Node*>& path);
 
 private:
-	void updateChildRoot(const std::vector<Node*>& path, int currentRootIndex, int newRootIndex);
+	Node* updateChildRoot(const std::vector<Node*>& path, int currentRootIndex, int newRootIndex);
 private:
 	Node* m_pRootNode;
 };

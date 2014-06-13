@@ -124,12 +124,10 @@ void AVLTree::LLRotate(Node* pNode, const std::vector<Node*>& path)
 	pNode->st_pLeftChild = path[index+1]->st_pRightChild;
 	path[index+1]->st_pRightChild = pNode;
 	
-	path[index+1]->st_BF = pNode->st_BF - 2;
+	Node* pNewRootNode = updateChildRoot(path, index, index+1);
 
-
-
-	updateChildRoot(path, index, index+1);
-
+	if (NULL != pNewRootNode)
+		Node::updateBF(pNewRootNode);
 }
 
 void AVLTree::RRRotate(Node* pNode, const std::vector<Node*>& path)
@@ -142,9 +140,10 @@ void AVLTree::RRRotate(Node* pNode, const std::vector<Node*>& path)
 	pNode->st_pRightChild = path[index+1]->st_pLeftChild;
 	path[index+1]->st_pLeftChild = path[index];
 
+	Node* pNewRootNode = updateChildRoot(path, index, index+1);
 
-	updateChildRoot(path, index, index+1);
-
+	if (NULL != pNewRootNode)
+		Node::updateBF(pNewRootNode);
 }
 
 void AVLTree::LRRotate(Node* pNode, const std::vector<Node*>& path)
@@ -154,14 +153,15 @@ void AVLTree::LRRotate(Node* pNode, const std::vector<Node*>& path)
 	if (-1 == index)
 		return;
 
-
 	path[index+1]->st_pRightChild = path[index+2]->st_pLeftChild;
 	path[index]->st_pLeftChild = path[index+2]->st_pRightChild;
 	path[index+2]->st_pLeftChild = path[index+1];
 	path[index+2]->st_pRightChild = path[index];
 
+	Node* pNewRootNode = updateChildRoot(path, index, index+2);
 
-	updateChildRoot(path, index, index+2);
+	if (NULL != pNewRootNode)
+		Node::updateBF(pNewRootNode);
 }
 
 void AVLTree::RLRotate(Node* pNode, const std::vector<Node*>& path)
@@ -177,11 +177,14 @@ void AVLTree::RLRotate(Node* pNode, const std::vector<Node*>& path)
 	path[index+2]->st_pLeftChild = path[index];
 
 
-	updateChildRoot(path, index, index+2);
+	Node* pNewRootNode = updateChildRoot(path, index, index+2);
+
+	if (NULL != pNewRootNode)
+		Node::updateBF(pNewRootNode);
 }
 
 
-void AVLTree::updateChildRoot(const std::vector<Node*>& path, int currentRootIndex, int newRootIndex)
+AVLTree::Node* AVLTree::updateChildRoot(const std::vector<Node*>& path, int currentRootIndex, int newRootIndex)
 {
 	assert(currentRootIndex >= 0 && currentRootIndex < path.size());
 	assert(newRootIndex >= 0 && newRootIndex < path.size());
@@ -211,7 +214,7 @@ void AVLTree::updateChildRoot(const std::vector<Node*>& path, int currentRootInd
 		m_pRootNode = path[newRootIndex];
 	}
 
-
+	return path[newRootIndex];
 }
 
 
